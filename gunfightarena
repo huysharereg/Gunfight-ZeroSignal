@@ -1,390 +1,474 @@
--- Gunfight Arena Hack - ESP & Aimbot for ENEMIES ONLY
--- Fixed: Không ghim đồng đội
+-- Gunfight Arena Hack - Fresh Rebuild
+-- No external dependencies, simple and working
 
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
+-- ========== SETUP ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
-local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
+-- Wait for everything to load
+repeat task.wait() until game:IsLoaded()
+local player = Players.LocalPlayer
 repeat task.wait() until player
-print("✅ Player loaded")
+
+print("🎮 Gunfight Arena Hack Initializing...")
 
 local camera = Workspace.CurrentCamera
 
--- Settings
+-- ========== SETTINGS ==========
 local Settings = {
     Aimbot = false,
     ESP = false,
     UnlimitedAmmo = false,
-    FOV = 100,
-    TeamCheck = true  -- QUAN TRỌNG: Kiểm tra đội
+    FOV = 120,
+    TeamCheck = true,
+    VisibleCheck = true
 }
 
--- Drawing objects
-local circle
-local ESPDrawings = {}
+-- ========== DRAWING OBJECTS ==========
+local FOVCircle
+local ESPCache = {}
 
--- Kiểm tra có phải đồng đội không
+-- ========== UTILITY FUNCTIONS ==========
+local function createFOVCircle()
+    if FOVCircle then
+        FOVCircle:Remove()
+    end
+    
+    FOVCircle = Drawing.new("Circle")
+    FOVCircle.Visible = Settings.Aimbot
+    FOVCircle.Radius = Settings.FOV
+    FOVCircle.Thickness = 2
+    FOVCircle.Color = Color3.fromRGB(255, 0, 0)
+    FOVCircle.Filled = false
+    FOVCircle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+end
+
+-- Check if player is enemy
 local function isEnemy(targetPlayer)
-    if not Settings.TeamCheck then 
-        return targetPlayer ~= player  -- Nếu không kiểm tra đội, tất cả đều là enemy trừ mình
-    end
+    if targetPlayer == player then return false end
+    if not Settings.TeamCheck then return true end
     
-    -- Lấy team của player hiện tại
-    local myTeam = player.Team or player:GetAttribute("Team") or player:FindFirstChild("Team") 
-    local targetTeam = targetPlayer.Team or targetPlayer:GetAttribute("Team") or targetPlayer:FindFirstChild("Team")
+    -- Try different ways to get team
+    local myTeam = player.Team
+    local targetTeam = targetPlayer.Team
     
-    -- Nếu không có team system thì coi tất cả là enemy
+    -- If no Team objects, check attributes
     if not myTeam or not targetTeam then
-        return targetPlayer ~= player
+        myTeam = player:GetAttribute("Team")
+        targetTeam = targetPlayer:GetAttribute("Team")
     end
     
-    -- So sánh team
-    local myTeamName = typeof(myTeam) == "Instance" and myTeam.Name or myTeam
-    local targetTeamName = typeof(targetTeam) == "Instance" and targetTeam.Name or targetTeam
+    -- If still no teams, assume all are enemies
+    if not myTeam or not targetTeam then
+        return true
+    end
+    
+    -- Compare teams
+    local myTeamName = typeof(myTeam) == "Instance" and myTeam.Name or tostring(myTeam)
+    local targetTeamName = typeof(targetTeam) == "Instance" and targetTeam.Name or tostring(targetTeam)
     
     return myTeamName ~= targetTeamName
 end
 
--- Create FOV circle
-local function createCircle()
-    if circle then circle:Remove() end
+-- Check if player is visible
+local function isVisible(targetPart)
+    if not Settings.VisibleCheck then return true end
     
-    circle = Drawing.new("Circle")
-    circle.Visible = Settings.Aimbot
-    circle.Radius = Settings.FOV
-    circle.Thickness = 2
-    circle.Color = Color3.fromRGB(255, 0, 0)
-    circle.Filled = false
-    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    local origin = camera.CFrame.Position
+    local direction = (targetPart.Position - origin).Unit * 1000
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {player.Character, targetPart.Parent}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    
+    local result = Workspace:Raycast(origin, direction, raycastParams)
+    
+    if result then
+        -- Check if what we hit is part of the target
+        return result.Instance:IsDescendantOf(targetPart.Parent)
+    end
+    
+    return true
 end
 
--- Get closest ENEMY (không phải đồng đội)
-local function getClosestEnemy()
-    local closest = nil
-    local closestDist = Settings.FOV
-    local mousePos = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+-- ========== AIMBOT ==========
+local function findBestTarget()
+    local bestTarget = nil
+    local closestDistance = Settings.FOV
+    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
     
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr == player then continue end
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer == player then continue end
+        if not isEnemy(targetPlayer) then continue end
         
-        -- CHỈ CHỌN ENEMY
-        if not isEnemy(plr) then
-            continue
-        end
+        local character = targetPlayer.Character
+        if not character then continue end
         
-        local char = plr.Character
-        if char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if root then
-                local pos, onScreen = camera:WorldToViewportPoint(root.Position)
-                
-                if onScreen then
-                    local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                    if dist < closestDist then
-                        closest = plr
-                        closestDist = dist
-                    end
-                end
-            end
+        local humanoid = character:FindFirstChild("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then continue end
+        
+        local head = character:FindFirstChild("Head")
+        if not head then continue end
+        
+        -- Check visibility
+        if not isVisible(head) then continue end
+        
+        -- Get screen position
+        local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
+        if not onScreen then continue end
+        
+        -- Calculate distance from crosshair
+        local distance = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+        
+        if distance < closestDistance then
+            closestDistance = distance
+            bestTarget = targetPlayer
         end
     end
     
-    return closest
+    return bestTarget
 end
 
--- Aimbot chỉ nhắm vào enemy
-local function aimAtEnemy()
+local function aimAtTarget()
     if not Settings.Aimbot then return end
     
-    local target = getClosestEnemy()
+    local target = findBestTarget()
     if not target or not target.Character then return end
     
-    local char = target.Character
-    local head = char:FindFirstChild("Head")
-    local root = char:FindFirstChild("HumanoidRootPart")
+    local head = target.Character:FindFirstChild("Head")
+    if not head then return end
     
-    if not head and not root then return end
+    local screenPos = camera:WorldToScreenPoint(head.Position)
+    if screenPos.Z <= 0 then return end
     
-    local aimPart = head or root
-    local screenPos = camera:WorldToScreenPoint(aimPart.Position)
+    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    local targetPos = Vector2.new(screenPos.X, screenPos.Y)
+    local delta = (targetPos - screenCenter) * 0.2  -- Smoothing
     
-    if screenPos.Z > 0 then
-        local mousePos = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-        local targetPos = Vector2.new(screenPos.X, screenPos.Y)
-        local delta = (targetPos - mousePos) * 0.3
-        
-        mousemoverel(delta.X, delta.Y)
-    end
+    mousemoverel(delta.X, delta.Y)
 end
 
--- ESP chỉ hiện enemy
+-- ========== ESP ==========
 local function updateESP()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr == player then continue end
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer == player then continue end
         
-        -- CHỈ HIỆN ESP CHO ENEMY
-        if not isEnemy(plr) then
-            if ESPDrawings[plr] then
-                ESPDrawings[plr].box.Visible = false
-                ESPDrawings[plr].name.Visible = false
-                if ESPDrawings[plr].health then
-                    ESPDrawings[plr].health.Visible = false
+        local character = targetPlayer.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        
+        if Settings.ESP and character and humanoid and humanoid.Health > 0 then
+            -- Only show ESP for enemies
+            if not isEnemy(targetPlayer) then
+                if ESPCache[targetPlayer] then
+                    ESPCache[targetPlayer].Box.Visible = false
+                    ESPCache[targetPlayer].Name.Visible = false
+                    ESPCache[targetPlayer].HealthBar.Visible = false
                 end
+                continue
             end
-            continue
-        end
-        
-        local char = plr.Character
-        local root = char and char:FindFirstChild("HumanoidRootPart")
-        local humanoid = char and char:FindFirstChild("Humanoid")
-        
-        if Settings.ESP and root and humanoid and humanoid.Health > 0 then
-            local pos, onScreen = camera:WorldToViewportPoint(root.Position)
             
-            if onScreen then
-                if not ESPDrawings[plr] then
-                    -- Create ESP drawings
-                    ESPDrawings[plr] = {
-                        box = Drawing.new("Square"),
-                        name = Drawing.new("Text"),
-                        health = Drawing.new("Text")
-                    }
-                    
-                    local drawings = ESPDrawings[plr]
-                    drawings.box.Thickness = 2
-                    drawings.box.Color = Color3.fromRGB(255, 50, 50)  -- Màu đỏ cho enemy
-                    drawings.box.Filled = false
-                    
-                    drawings.name.Color = Color3.fromRGB(255, 100, 100)
-                    drawings.name.Size = 14
-                    drawings.name.Font = 2
-                    drawings.name.Text = plr.Name .. " [ENEMY]"
-                    drawings.name.Outline = true
-                    
-                    drawings.health.Color = Color3.fromRGB(100, 255, 100)
-                    drawings.health.Size = 12
-                    drawings.health.Font = 2
-                    drawings.health.Outline = true
-                end
+            local root = character:FindFirstChild("HumanoidRootPart")
+            local head = character:FindFirstChild("Head")
+            
+            if root and head then
+                local rootPos, onScreen = camera:WorldToViewportPoint(root.Position)
                 
-                local drawings = ESPDrawings[plr]
-                local head = char:FindFirstChild("Head")
-                
-                if head then
+                if onScreen then
+                    -- Create ESP drawings if they don't exist
+                    if not ESPCache[targetPlayer] then
+                        ESPCache[targetPlayer] = {
+                            Box = Drawing.new("Square"),
+                            Name = Drawing.new("Text"),
+                            HealthBar = Drawing.new("Square")
+                        }
+                        
+                        local esp = ESPCache[targetPlayer]
+                        
+                        -- Box setup
+                        esp.Box.Thickness = 2
+                        esp.Box.Color = Color3.fromRGB(255, 50, 50)
+                        esp.Box.Filled = false
+                        
+                        -- Name setup
+                        esp.Name.Color = Color3.fromRGB(255, 255, 255)
+                        esp.Name.Size = 14
+                        esp.Name.Font = 2
+                        esp.Name.Outline = true
+                        
+                        -- Health bar setup
+                        esp.HealthBar.Color = Color3.fromRGB(0, 255, 0)
+                        esp.HealthBar.Filled = true
+                    end
+                    
+                    local esp = ESPCache[targetPlayer]
                     local headPos = camera:WorldToViewportPoint(head.Position)
-                    local height = math.abs(headPos.Y - pos.Y) * 2
+                    
+                    -- Calculate box size
+                    local height = math.abs(headPos.Y - rootPos.Y) * 2
                     local width = height * 0.6
                     
                     -- Update box
-                    drawings.box.Size = Vector2.new(width, height)
-                    drawings.box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
-                    drawings.box.Visible = true
+                    esp.Box.Size = Vector2.new(width, height)
+                    esp.Box.Position = Vector2.new(rootPos.X - width/2, rootPos.Y - height/2)
+                    esp.Box.Visible = true
                     
                     -- Update name
-                    drawings.name.Position = Vector2.new(pos.X, pos.Y - height/2 - 20)
-                    drawings.name.Visible = true
+                    esp.Name.Text = targetPlayer.Name
+                    esp.Name.Position = Vector2.new(rootPos.X, rootPos.Y - height/2 - 20)
+                    esp.Name.Visible = true
                     
-                    -- Update health
-                    drawings.health.Text = "HP: " .. math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
-                    drawings.health.Position = Vector2.new(pos.X, pos.Y + height/2 + 5)
-                    drawings.health.Visible = true
-                end
-            elseif ESPDrawings[plr] then
-                ESPDrawings[plr].box.Visible = false
-                ESPDrawings[plr].name.Visible = false
-                if ESPDrawings[plr].health then
-                    ESPDrawings[plr].health.Visible = false
+                    -- Update health bar
+                    local healthPercent = humanoid.Health / humanoid.MaxHealth
+                    local barWidth = 60
+                    local barHeight = 4
+                    
+                    esp.HealthBar.Size = Vector2.new(barWidth * healthPercent, barHeight)
+                    esp.HealthBar.Position = Vector2.new(rootPos.X - barWidth/2, rootPos.Y + height/2 + 5)
+                    esp.HealthBar.Visible = true
+                    
+                    -- Change health bar color based on health
+                    if healthPercent > 0.6 then
+                        esp.HealthBar.Color = Color3.fromRGB(0, 255, 0)
+                    elseif healthPercent > 0.3 then
+                        esp.HealthBar.Color = Color3.fromRGB(255, 255, 0)
+                    else
+                        esp.HealthBar.Color = Color3.fromRGB(255, 0, 0)
+                    end
+                elseif ESPCache[targetPlayer] then
+                    -- Hide ESP if not on screen
+                    ESPCache[targetPlayer].Box.Visible = false
+                    ESPCache[targetPlayer].Name.Visible = false
+                    ESPCache[targetPlayer].HealthBar.Visible = false
                 end
             end
-        elseif ESPDrawings[plr] then
-            ESPDrawings[plr].box.Visible = false
-            ESPDrawings[plr].name.Visible = false
-            if ESPDrawings[plr].health then
-                ESPDrawings[plr].health.Visible = false
-            end
+        elseif ESPCache[targetPlayer] then
+            -- Hide ESP if player is dead or doesn't exist
+            ESPCache[targetPlayer].Box.Visible = false
+            ESPCache[targetPlayer].Name.Visible = false
+            ESPCache[targetPlayer].HealthBar.Visible = false
         end
     end
     
-    -- Clean up
-    for plr, drawings in pairs(ESPDrawings) do
-        if not Players:FindFirstChild(plr.Name) then
-            drawings.box:Remove()
-            drawings.name:Remove()
-            if drawings.health then
-                drawings.health:Remove()
-            end
-            ESPDrawings[plr] = nil
+    -- Clean up cache for players who left
+    for cachedPlayer, _ in pairs(ESPCache) do
+        if not Players:FindFirstChild(cachedPlayer.Name) then
+            ESPCache[cachedPlayer].Box:Remove()
+            ESPCache[cachedPlayer].Name:Remove()
+            ESPCache[cachedPlayer].HealthBar:Remove()
+            ESPCache[cachedPlayer] = nil
         end
     end
 end
 
--- Unlimited ammo
+-- ========== UNLIMITED AMMO ==========
 local function updateAmmo()
     if not Settings.UnlimitedAmmo then return end
     
-    local char = player.Character
-    if not char then return end
+    local character = player.Character
+    if not character then return end
     
-    -- Find and update ammo in tools
-    for _, tool in pairs(char:GetChildren()) do
+    -- Check all tools/weapons
+    for _, tool in pairs(character:GetChildren()) do
         if tool:IsA("Tool") then
-            -- Check for ammo value
-            for _, obj in pairs(tool:GetDescendants()) do
-                if obj:IsA("NumberValue") and (obj.Name:lower():find("ammo") or obj.Name:lower():find("bullet")) then
-                    obj.Value = 999
+            -- Look for ammo values
+            local function updateValue(obj)
+                if obj:IsA("NumberValue") then
+                    -- Common ammo value names
+                    local nameLower = obj.Name:lower()
+                    if nameLower:find("ammo") or nameLower:find("bullet") or nameLower:find("clip") then
+                        if obj.Value < 30 then  -- Only refill if low
+                            obj.Value = 999
+                        end
+                    end
                 end
+            end
+            
+            -- Check tool directly
+            updateValue(tool)
+            
+            -- Check all descendants
+            for _, descendant in pairs(tool:GetDescendants()) do
+                updateValue(descendant)
             end
         end
     end
 end
 
--- Create UI
+-- ========== UI ==========
 local function createUI()
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "HackUI"
-    screenGui.Parent = game.CoreGui
-    screenGui.ResetOnSpawn = false
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "GunfightHackUI"
+    ScreenGui.Parent = game:GetService("CoreGui")
+    ScreenGui.ResetOnSpawn = false
     
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 250, 0, 220)
-    mainFrame.Position = UDim2.new(0, 10, 0, 10)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Parent = screenGui
+    -- Main Frame
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 280, 0, 250)
+    MainFrame.Position = UDim2.new(0, 20, 0, 20)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = mainFrame
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = MainFrame
+    
+    -- Title Bar
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Size = UDim2.new(1, 0, 0, 35)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
+    
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 8)
+    TitleCorner.Parent = TitleBar
     
     -- Title
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-    title.Text = "🔫 ENEMY ONLY HACK"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
-    title.Parent = mainFrame
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(0.8, 0, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔫 GUNFIGHT HACK"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = TitleBar
     
-    local titleCorner = Instance.new("UICorner")
-    titleCorner.CornerRadius = UDim.new(0, 8)
-    titleCorner.Parent = title
+    -- Close Button
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(0, 25, 0, 25)
+    CloseButton.Position = UDim2.new(1, -30, 0.5, -12.5)
+    CloseButton.AnchorPoint = Vector2.new(1, 0.5)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    CloseButton.Text = "✕"
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.TextSize = 14
+    CloseButton.Parent = TitleBar
+    
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 5)
+    CloseCorner.Parent = CloseButton
     
     -- Content
-    local content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -20, 1, -40)
-    content.Position = UDim2.new(0, 10, 0, 40)
-    content.BackgroundTransparency = 1
-    content.Parent = mainFrame
+    local Content = Instance.new("Frame")
+    Content.Size = UDim2.new(1, -20, 1, -50)
+    Content.Position = UDim2.new(0, 10, 0, 45)
+    Content.BackgroundTransparency = 1
+    Content.Parent = MainFrame
     
-    -- Create toggle buttons
-    local yPos = 0
-    
-    local function addToggle(text, setting)
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(1, 0, 0, 35)
-        button.Position = UDim2.new(0, 0, 0, yPos)
-        button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-        button.Text = ""
-        button.Parent = content
+    -- Create Toggle Function
+    local function createToggle(text, setting, yPos)
+        local ToggleFrame = Instance.new("Frame")
+        ToggleFrame.Size = UDim2.new(1, 0, 0, 40)
+        ToggleFrame.Position = UDim2.new(0, 0, 0, yPos)
+        ToggleFrame.BackgroundTransparency = 1
+        ToggleFrame.Parent = Content
         
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 6)
-        corner.Parent = button
+        local ToggleButton = Instance.new("TextButton")
+        ToggleButton.Size = UDim2.new(1, 0, 1, 0)
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+        ToggleButton.Text = ""
+        ToggleButton.Parent = ToggleFrame
         
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.7, 0, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = "  " .. text
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.Font = Enum.Font.Gotham
-        label.TextSize = 14
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = button
+        local ToggleCorner = Instance.new("UICorner")
+        ToggleCorner.CornerRadius = UDim.new(0, 6)
+        ToggleCorner.Parent = ToggleButton
         
-        local indicator = Instance.new("Frame")
-        indicator.Size = UDim2.new(0, 40, 0, 20)
-        indicator.Position = UDim2.new(1, -45, 0.5, -10)
-        indicator.AnchorPoint = Vector2.new(1, 0.5)
-        indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
-        indicator.Parent = button
+        local ToggleText = Instance.new("TextLabel")
+        ToggleText.Size = UDim2.new(0.7, 0, 1, 0)
+        ToggleText.Position = UDim2.new(0, 10, 0, 0)
+        ToggleText.BackgroundTransparency = 1
+        ToggleText.Text = "  " .. text
+        ToggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ToggleText.Font = Enum.Font.Gotham
+        ToggleText.TextSize = 14
+        ToggleText.TextXAlignment = Enum.TextXAlignment.Left
+        ToggleText.Parent = ToggleButton
         
-        local indCorner = Instance.new("UICorner")
-        indCorner.CornerRadius = UDim.new(0, 10)
-        indCorner.Parent = indicator
+        local Indicator = Instance.new("Frame")
+        Indicator.Size = UDim2.new(0, 40, 0, 20)
+        Indicator.Position = UDim2.new(1, -45, 0.5, -10)
+        Indicator.AnchorPoint = Vector2.new(1, 0.5)
+        Indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
+        Indicator.Parent = ToggleButton
         
-        button.MouseButton1Click:Connect(function()
+        local IndicatorCorner = Instance.new("UICorner")
+        IndicatorCorner.CornerRadius = UDim.new(0, 10)
+        IndicatorCorner.Parent = Indicator
+        
+        ToggleButton.MouseButton1Click:Connect(function()
             Settings[setting] = not Settings[setting]
-            indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
+            Indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
             
             if setting == "Aimbot" then
-                if circle then
-                    circle.Visible = Settings.Aimbot
+                if FOVCircle then
+                    FOVCircle.Visible = Settings.Aimbot
                 else
-                    createCircle()
+                    createFOVCircle()
                 end
             end
             
-            print(text .. ": " .. (Settings[setting] and "ON" or "OFF"))
+            print("[" .. text .. "] " .. (Settings[setting] and "ON" or "OFF"))
         end)
         
-        yPos = yPos + 40
+        return ToggleFrame
     end
     
-    -- FOV slider
-    local function addFOVSlider()
-        local sliderFrame = Instance.new("Frame")
-        sliderFrame.Size = UDim2.new(1, 0, 0, 50)
-        sliderFrame.Position = UDim2.new(0, 0, 0, yPos)
-        sliderFrame.BackgroundTransparency = 1
-        sliderFrame.Parent = content
+    -- Create FOV Slider
+    local function createFOVSlider(yPos)
+        local SliderFrame = Instance.new("Frame")
+        SliderFrame.Size = UDim2.new(1, 0, 0, 60)
+        SliderFrame.Position = UDim2.new(0, 0, 0, yPos)
+        SliderFrame.BackgroundTransparency = 1
+        SliderFrame.Parent = Content
         
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 0, 20)
-        label.BackgroundTransparency = 1
-        label.Text = "FOV: " .. Settings.FOV
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.Font = Enum.Font.Gotham
-        label.TextSize = 14
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = sliderFrame
+        local SliderText = Instance.new("TextLabel")
+        SliderText.Size = UDim2.new(1, 0, 0, 20)
+        SliderText.BackgroundTransparency = 1
+        SliderText.Text = "FOV: " .. Settings.FOV
+        SliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        SliderText.Font = Enum.Font.Gotham
+        SliderText.TextSize = 14
+        SliderText.TextXAlignment = Enum.TextXAlignment.Left
+        SliderText.Parent = SliderFrame
         
-        local slider = Instance.new("Frame")
-        slider.Size = UDim2.new(1, 0, 0, 6)
-        slider.Position = UDim2.new(0, 0, 0, 25)
-        slider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-        slider.Parent = sliderFrame
+        local SliderBar = Instance.new("Frame")
+        SliderBar.Size = UDim2.new(1, 0, 0, 6)
+        SliderBar.Position = UDim2.new(0, 0, 0, 30)
+        SliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+        SliderBar.Parent = SliderFrame
         
-        local fill = Instance.new("Frame")
-        fill.Size = UDim2.new(Settings.FOV / 500, 0, 1, 0)
-        fill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        fill.Parent = slider
+        local SliderFill = Instance.new("Frame")
+        SliderFill.Size = UDim2.new(Settings.FOV / 500, 0, 1, 0)
+        SliderFill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        SliderFill.Parent = SliderBar
         
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(0, 20, 0, 20)
-        button.Position = UDim2.new(Settings.FOV / 500, -10, 0.5, -10)
-        button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        button.Text = ""
-        button.Parent = slider
+        local SliderButton = Instance.new("TextButton")
+        SliderButton.Size = UDim2.new(0, 20, 0, 20)
+        SliderButton.Position = UDim2.new(Settings.FOV / 500, -10, 0.5, -10)
+        SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        SliderButton.Text = ""
+        SliderButton.Parent = SliderBar
         
-        button.MouseButton1Down:Connect(function()
+        SliderButton.MouseButton1Down:Connect(function()
             local connection
             connection = UserInputService.InputChanged:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseMovement then
-                    local percent = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+                    local percent = math.clamp(
+                        (input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X,
+                        0, 1
+                    )
                     local newFOV = math.floor(50 + percent * 450)
                     Settings.FOV = newFOV
-                    if circle then circle.Radius = newFOV end
-                    label.Text = "FOV: " .. newFOV
-                    fill.Size = UDim2.new(newFOV / 500, 0, 1, 0)
-                    button.Position = UDim2.new(newFOV / 500, -10, 0.5, -10)
+                    if FOVCircle then FOVCircle.Radius = newFOV end
+                    SliderText.Text = "FOV: " .. newFOV
+                    SliderFill.Size = UDim2.new(newFOV / 500, 0, 1, 0)
+                    SliderButton.Position = UDim2.new(newFOV / 500, -10, 0.5, -10)
                 end
             end)
             
@@ -395,51 +479,24 @@ local function createUI()
             end)
         end)
         
-        yPos = yPos + 60
+        return SliderFrame
     end
     
-    addToggle("Aimbot (Enemy Only)", "Aimbot")
-    addToggle("ESP (Enemy Only)", "ESP")
-    addToggle("Unlimited Ammo", "UnlimitedAmmo")
-    addFOVSlider()
+    -- Create UI Elements
+    createToggle("Aimbot", "Aimbot", 0)
+    createToggle("ESP Box", "ESP", 45)
+    createToggle("Unlimited Ammo", "UnlimitedAmmo", 90)
+    createFOVSlider(135)
     
-    -- Close button
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 25, 0, 25)
-    closeBtn.Position = UDim2.new(1, -30, 0, 5)
-    closeBtn.AnchorPoint = Vector2.new(1, 0)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    closeBtn.Text = "X"
-    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 14
-    closeBtn.Parent = title
-    
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 6)
-    closeCorner.Parent = closeBtn
-    
-    closeBtn.MouseButton1Click:Connect(function()
-        screenGui:Destroy()
-        if circle then circle:Remove() end
-        for _, drawings in pairs(ESPDrawings) do
-            drawings.box:Remove()
-            drawings.name:Remove()
-            if drawings.health then
-                drawings.health:Remove()
-            end
-        end
-    end)
-    
-    -- Draggable
+    -- Draggable UI
     local dragging = false
     local dragStart, startPos
     
-    title.InputBegan:Connect(function(input)
+    TitleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = mainFrame.Position
+            startPos = MainFrame.Position
             
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
@@ -449,69 +506,81 @@ local function createUI()
         end
     end)
     
-    title.InputChanged:Connect(function(input)
+    TitleBar.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
             local delta = input.Position - dragStart
-            mainFrame.Position = UDim2.new(
-                startPos.X.Scale, 
+            MainFrame.Position = UDim2.new(
+                startPos.X.Scale,
                 startPos.X.Offset + delta.X,
-                startPos.Y.Scale, 
+                startPos.Y.Scale,
                 startPos.Y.Offset + delta.Y
             )
         end
     end)
     
-    return screenGui
+    -- Close Button Event
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+        if FOVCircle then FOVCircle:Remove() end
+        for _, esp in pairs(ESPCache) do
+            esp.Box:Remove()
+            esp.Name:Remove()
+            esp.HealthBar:Remove()
+        end
+        ESPCache = {}
+    end)
+    
+    return ScreenGui
 end
 
--- Initialize
-createCircle()
-local ui = createUI()
+-- ========== INITIALIZE ==========
+-- Create FOV Circle
+createFOVCircle()
 
--- Main loop
+-- Create UI
+local UI = createUI()
+
+-- ========== MAIN LOOP ==========
 RunService.Heartbeat:Connect(function()
-    -- Update circle position
-    if circle then
-        circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    -- Update FOV Circle Position
+    if FOVCircle then
+        FOVCircle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
     end
     
-    -- Run features
-    aimAtEnemy()
+    -- Run Features
+    aimAtTarget()
     updateESP()
     updateAmmo()
 end)
 
--- Display enemy count
-RunService.Heartbeat:Connect(function()
-    local enemyCount = 0
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= player and isEnemy(plr) then
-            enemyCount = enemyCount + 1
-        end
-    end
-    
-    -- Update UI title
-    if ui and ui:FindFirstChild("HackUI") then
-        local title = ui.HackUI:FindFirstChild("Frame"):FindFirstChild("TextLabel")
-        if title then
-            title.Text = "🔫 ENEMIES: " .. enemyCount
+-- ========== CLEANUP ==========
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Insert then
+        -- Toggle UI visibility
+        local ui = game:GetService("CoreGui"):FindFirstChild("GunfightHackUI")
+        if ui then
+            ui.Enabled = not ui.Enabled
         end
     end
 end)
 
--- Notification
+-- ========== STARTUP MESSAGE ==========
+print("==========================================")
+print("✅ GUNFIGHT ARENA HACK LOADED SUCCESSFULLY")
+print("==========================================")
+print("🎯 AIMBOT: Locks onto closest enemy in FOV")
+print("👁️ ESP: Shows enemy boxes with health bars")
+print("🔫 UNLIMITED AMMO: Never run out of bullets")
+print("🎮 UI: Drag to move, Close button to exit")
+print("📌 INSERT: Toggle UI visibility")
+print("==========================================")
+
+-- Send notification
 task.spawn(function()
-    wait(1)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Enemy-Only Hack",
-        Text = "✅ Aimbot & ESP chỉ hoạt động với ENEMY\n✅ Đồng đội sẽ không bị ảnh hưởng",
+    task.wait(1)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Gunfight Hack Loaded",
+        Text = "✅ All features ready!\nToggle in UI\nPress INSERT to hide/show",
         Duration = 5
     })
 end)
-
-print("==========================================")
-print("✅ ENEMY-ONLY HACK LOADED")
-print("🎯 Aimbot: Chỉ nhắm vào ENEMY")
-print("👁️ ESP: Chỉ hiện ENEMY")
-print("🔫 Ammo: Unlimited")
-print("==========================================")
