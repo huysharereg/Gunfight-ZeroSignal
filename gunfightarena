@@ -1,22 +1,365 @@
-local _d = "CgoKCmlmIG5vdCBnYW1lOklzTG9hZGVkKCkgdGhlbgogICAgZ2FtZS5Mb2FkZWQ6V2FpdCgpCmVuZAoKbG9jYWwgQ2xjV0RUU0UgPSBnYW1lOkdldFNlcnZpY2UoIkNsY1dEVFNFIikKbG9jYWwgZ3lJUEFiUG4gPSBnYW1lOkdldFNlcnZpY2UoImd5SVBBYlBuIikKbG9jYWwgZ1V1UHJtVE4gPSBnYW1lOkdldFNlcnZpY2UoImdVdVBybVROIikKbG9jYWwgaWhGSFpWR0MgPSBnYW1lOkdldFNlcnZpY2UoImloRkhaVkdDIikKbG9jYWwgZnhzekF5dFEgPSBDbGNXRFRTRS5Mb2NhbFBsYXllcgoKCnJlcGVhdCB0YXNrLndhaXQoKSB1bnRpbCBmeHN6QXl0UQpwcmludCgi4pyFIFBsYXllciBsb2FkZWQiKQoKbG9jYWwgdVRsdHNWZ3IgPSBpaEZIWlZHQy5DdXJyZW50Q2FtZXJhCgoKbG9jYWwgT1R3akVNdWogPSB7CiAgICBBaW1ib3QgPSBmYWxzZSwKICAgIEVTUCA9IGZhbHNlLAogICAgVW5saW1pdGVkQW1tbyA9IGZhbHNlLAogICAgRk9WID0gMTAwCn0KCgpsb2NhbCBqRlltdnBBdQpsb2NhbCBYWENXSkltUiA9IHt9CgoKbG9jYWwgYnBTeXpYVksgY3JlYXRlQ2lyY2xlKCkKICAgIGlmIGpGWW12cEF1IHRoZW4gakZZbXZwQXU6UmVtb3ZlKCkgZW5kCiAgICAKICAgIGpGWW12cEF1ID0gRHJhd2luZy5uZXcoIkNpcmNsZSIpCiAgICBqRlltdnBBdS5WaXNpYmxlID0gT1R3akVNdWouQWltYm90CiAgICBqRlltdnBBdS5SYWRpdXMgPSBPVHdqRU11ai5GT1YKICAgIGpGWW12cEF1LlRoaWNrbmVzcyA9IDIKICAgIGpGWW12cEF1LkNvbG9yID0gQ29sb3IzLmZyb21SR0IoMjU1LCAwLCAwKQogICAgakZZbXZwQXUuRmlsbGVkID0gZmFsc2UKICAgIGpGWW12cEF1LlBvc2l0aW9uID0gVmVjdG9yMi5uZXcodVRsdHNWZ3IuVmlld3BvcnRTaXplLlgvMiwgdVRsdHNWZ3IuVmlld3BvcnRTaXplLlkvMikKZW5kCgoKbG9jYWwgYnBTeXpYVksgZ2V0Q2xvc2VzdFBsYXllcigpCiAgICBsb2NhbCBHWmRaS2RScSA9IG5pbAogICAgbG9jYWwgYnFUZEVrdU8gPSBPVHdqRU11ai5GT1YKICAgIGxvY2FsIFF1S1hwR1RNID0gVmVjdG9yMi5uZXcodVRsdHNWZ3IuVmlld3BvcnRTaXplLlgvMiwgdVRsdHNWZ3IuVmlld3BvcnRTaXplLlkvMikKICAgIAogICAgZm9yIF8sIHBsciBpbiBwYWlycyhDbGNXRFRTRTpHZXRQbGF5ZXJzKCkpIGRvCiAgICAgICAgaWYgcGxyID09IGZ4c3pBeXRRIHRoZW4gY29udGludWUgZW5kCiAgICAgICAgCiAgICAgICAgbG9jYWwgTGtubFRjdXkgPSBwbHIuQ2hhcmFjdGVyCiAgICAgICAgaWYgTGtubFRjdXkgYW5kIExrbmxUY3V5OkZpbmRGaXJzdENoaWxkKCJIdW1hbm9pZFJvb3RQYXJ0IikgdGhlbgogICAgICAgICAgICBsb2NhbCB1dnlIRGhmZSA9IExrbmxUY3V5Lkh1bWFub2lkUm9vdFBhcnQKICAgICAgICAgICAgbG9jYWwgdmNyYXp3b2UsIG9uU2NyZWVuID0gdVRsdHNWZ3I6V29ybGRUb1ZpZXdwb3J0UG9pbnQodXZ5SERoZmUuUG9zaXRpb24pCiAgICAgICAgICAgIAogICAgICAgICAgICBpZiBvblNjcmVlbiB0aGVuCiAgICAgICAgICAgICAgICBsb2NhbCB3emVzek56WCA9IChWZWN0b3IyLm5ldyh2Y3JhendvZS5YLCB2Y3JhendvZS5ZKSAtIFF1S1hwR1RNKS5NYWduaXR1ZGUKICAgICAgICAgICAgICAgIGlmIHd6ZXN6TnpYIDwgYnFUZEVrdU8gdGhlbgogICAgICAgICAgICAgICAgICAgIEdaZFpLZFJxID0gcGxyCiAgICAgICAgICAgICAgICAgICAgYnFUZEVrdU8gPSB3emVzek56WAogICAgICAgICAgICAgICAgZW5kCiAgICAgICAgICAgIGVuZAogICAgICAgIGVuZAogICAgZW5kCiAgICAKICAgIHJldHVybiBHWmRaS2RScQplbmQKCgpsb2NhbCBicFN5elhWSyBhaW1BdFRhcmdldCgpCiAgICBpZiBub3QgT1R3akVNdWouQWltYm90IHRoZW4gcmV0dXJuIGVuZAogICAgCiAgICBsb2NhbCBTaEF3ZlFWaSA9IGdldENsb3Nlc3RQbGF5ZXIoKQogICAgaWYgbm90IFNoQXdmUVZpIG9yIG5vdCBTaEF3ZlFWaS5DaGFyYWN0ZXIgdGhlbiByZXR1cm4gZW5kCiAgICAKICAgIGxvY2FsIHV2eUhEaGZlID0gU2hBd2ZRVmkuQ2hhcmFjdGVyOkZpbmRGaXJzdENoaWxkKCJIdW1hbm9pZFJvb3RQYXJ0IikKICAgIGlmIG5vdCB1dnlIRGhmZSB0aGVuIHJldHVybiBlbmQKICAgIAogICAgbG9jYWwgc2VQUkF0dXMgPSB1VGx0c1ZncjpXb3JsZFRvU2NyZWVuUG9pbnQodXZ5SERoZmUuUG9zaXRpb24pCiAgICBpZiBzZVBSQXR1cy5aID4gMCB0aGVuCiAgICAgICAgbG9jYWwgUXVLWHBHVE0gPSBWZWN0b3IyLm5ldyh1VGx0c1Znci5WaWV3cG9ydFNpemUuWC8yLCB1VGx0c1Znci5WaWV3cG9ydFNpemUuWS8yKQogICAgICAgIGxvY2FsIERZRG1QVk5jID0gVmVjdG9yMi5uZXcoc2VQUkF0dXMuWCwgc2VQUkF0dXMuWSkKICAgICAgICBsb2NhbCBOV1BKS0dOZSA9IChEWURtUFZOYyAtIFF1S1hwR1RNKSAqIDAuMwogICAgICAgIAogICAgICAgIG1vdXNlbW92ZXJlbChOV1BKS0dOZS5YLCBOV1BKS0dOZS5ZKQogICAgZW5kCmVuZAoKCmxvY2FsIGJwU3l6WFZLIHVwZGF0ZUVTUCgpCiAgICBmb3IgXywgcGxyIGluIHBhaXJzKENsY1dEVFNFOkdldFBsYXllcnMoKSkgZG8KICAgICAgICBpZiBwbHIgPT0gZnhzekF5dFEgdGhlbiBjb250aW51ZSBlbmQKICAgICAgICAKICAgICAgICBsb2NhbCBMa25sVGN1eSA9IHBsci5DaGFyYWN0ZXIKICAgICAgICBsb2NhbCB1dnlIRGhmZSA9IExrbmxUY3V5IGFuZCBMa25sVGN1eTpGaW5kRmlyc3RDaGlsZCgiSHVtYW5vaWRSb290UGFydCIpCiAgICAgICAgCiAgICAgICAgaWYgT1R3akVNdWouRVNQIGFuZCB1dnlIRGhmZSB0aGVuCiAgICAgICAgICAgIGxvY2FsIHZjcmF6d29lLCBvblNjcmVlbiA9IHVUbHRzVmdyOldvcmxkVG9WaWV3cG9ydFBvaW50KHV2eUhEaGZlLlBvc2l0aW9uKQogICAgICAgICAgICAKICAgICAgICAgICAgaWYgb25TY3JlZW4gdGhlbgogICAgICAgICAgICAgICAgaWYgbm90IFhYQ1dKSW1SW3Bscl0gdGhlbgogICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIFhYQ1dKSW1SW3Bscl0gPSB7CiAgICAgICAgICAgICAgICAgICAgICAgIGJveCA9IERyYXdpbmcubmV3KCJTcXVhcmUiKSwKICAgICAgICAgICAgICAgICAgICAgICAgbmFtZSA9IERyYXdpbmcubmV3KCJUZXh0IikKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgbG9jYWwgdnZBTE9iTGsgPSBYWENXSkltUltwbHJdCiAgICAgICAgICAgICAgICAgICAgdnZBTE9iTGsuYm94LlRoaWNrbmVzcyA9IDIKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5ib3guQ29sb3IgPSBDb2xvcjMuZnJvbVJHQigwLCAyNTUsIDApCiAgICAgICAgICAgICAgICAgICAgdnZBTE9iTGsuYm94LkZpbGxlZCA9IGZhbHNlCiAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgdnZBTE9iTGsubmFtZS5Db2xvciA9IENvbG9yMy5mcm9tUkdCKDI1NSwgMjU1LCAyNTUpCiAgICAgICAgICAgICAgICAgICAgdnZBTE9iTGsubmFtZS5TaXplID0gMTQKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5uYW1lLkZvbnQgPSAyCiAgICAgICAgICAgICAgICAgICAgdnZBTE9iTGsubmFtZS5UZXh0ID0gcGxyLk5hbWUKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5uYW1lLk91dGxpbmUgPSB0cnVlCiAgICAgICAgICAgICAgICBlbmQKICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgbG9jYWwgdnZBTE9iTGsgPSBYWENXSkltUltwbHJdCiAgICAgICAgICAgICAgICBsb2NhbCBUY0tRaEJwViA9IExrbmxUY3V5OkZpbmRGaXJzdENoaWxkKCJIZWFkIikKICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgaWYgVGNLUWhCcFYgdGhlbgogICAgICAgICAgICAgICAgICAgIGxvY2FsIEdhVVFYR1VNID0gdVRsdHNWZ3I6V29ybGRUb1ZpZXdwb3J0UG9pbnQoVGNLUWhCcFYuUG9zaXRpb24pCiAgICAgICAgICAgICAgICAgICAgbG9jYWwgR2ZyaFFCU2QgPSBtYXRoLmFicyhHYVVRWEdVTS5ZIC0gdmNyYXp3b2UuWSkgKiAyCiAgICAgICAgICAgICAgICAgICAgbG9jYWwgcXV0VUhWUlggPSBHZnJoUUJTZCAqIDAuNgogICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIHZ2QUxPYkxrLmJveC5TaXplID0gVmVjdG9yMi5uZXcocXV0VUhWUlgsIEdmcmhRQlNkKQogICAgICAgICAgICAgICAgICAgIHZ2QUxPYkxrLmJveC5Qb3NpdGlvbiA9IFZlY3RvcjIubmV3KHZjcmF6d29lLlggLSBxdXRVSFZSWC8yLCB2Y3JhendvZS5ZIC0gR2ZyaFFCU2QvMikKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5ib3guVmlzaWJsZSA9IHRydWUKICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5uYW1lLlBvc2l0aW9uID0gVmVjdG9yMi5uZXcodmNyYXp3b2UuWCwgdmNyYXp3b2UuWSAtIEdmcmhRQlNkLzIgLSAyMCkKICAgICAgICAgICAgICAgICAgICB2dkFMT2JMay5uYW1lLlZpc2libGUgPSB0cnVlCiAgICAgICAgICAgICAgICBlbmQKICAgICAgICAgICAgZWxzZWlmIFhYQ1dKSW1SW3Bscl0gdGhlbgogICAgICAgICAgICAgICAgWFhDV0pJbVJbcGxyXS5ib3guVmlzaWJsZSA9IGZhbHNlCiAgICAgICAgICAgICAgICBYWENXSkltUltwbHJdLm5hbWUuVmlzaWJsZSA9IGZhbHNlCiAgICAgICAgICAgIGVuZAogICAgICAgIGVsc2VpZiBYWENXSkltUltwbHJdIHRoZW4KICAgICAgICAgICAgWFhDV0pJbVJbcGxyXS5ib3guVmlzaWJsZSA9IGZhbHNlCiAgICAgICAgICAgIFhYQ1dKSW1SW3Bscl0ubmFtZS5WaXNpYmxlID0gZmFsc2UKICAgICAgICBlbmQKICAgIGVuZAogICAgCiAgICAKICAgIGZvciBwbHIsIHZ2QUxPYkxrIGluIHBhaXJzKFhYQ1dKSW1SKSBkbwogICAgICAgIGlmIG5vdCBDbGNXRFRTRTpGaW5kRmlyc3RDaGlsZChwbHIuTmFtZSkgdGhlbgogICAgICAgICAgICB2dkFMT2JMay5ib3g6UmVtb3ZlKCkKICAgICAgICAgICAgdnZBTE9iTGsubmFtZTpSZW1vdmUoKQogICAgICAgICAgICBYWENXSkltUltwbHJdID0gbmlsCiAgICAgICAgZW5kCiAgICBlbmQKZW5kCgoKbG9jYWwgYnBTeXpYVksgdXBkYXRlQW1tbygpCiAgICBpZiBub3QgT1R3akVNdWouVW5saW1pdGVkQW1tbyB0aGVuIHJldHVybiBlbmQKICAgIAogICAgbG9jYWwgTGtubFRjdXkgPSBmeHN6QXl0US5DaGFyYWN0ZXIKICAgIGlmIG5vdCBMa25sVGN1eSB0aGVuIHJldHVybiBlbmQKICAgIAogICAgCiAgICBmb3IgXywgdG9vbCBpbiBwYWlycyhMa25sVGN1eTpHZXRDaGlsZHJlbigpKSBkbwogICAgICAgIGlmIHRvb2w6SXNBKCJUb29sIikgdGhlbgogICAgICAgICAgICBsb2NhbCBHT2VBU0NHUyA9IHRvb2w6RmluZEZpcnN0Q2hpbGQoIkFtbW8iKQogICAgICAgICAgICBpZiBHT2VBU0NHUyBhbmQgR09lQVNDR1M6SXNBKCJOdW1iZXJWYWx1ZSIpIHRoZW4KICAgICAgICAgICAgICAgIEdPZUFTQ0dTLlZhbHVlID0gOTk5CiAgICAgICAgICAgIGVuZAogICAgICAgIGVuZAogICAgZW5kCmVuZAoKCmxvY2FsIGJwU3l6WFZLIGNyZWF0ZVVJKCkKICAgIGxvY2FsIGtwV1FFcFhXID0gSW5zdGFuY2UubmV3KCJTY3JlZW5HdWkiKQogICAga3BXUUVwWFcuTmFtZSA9ICJIYWNrVUkiCiAgICBrcFdRRXBYVy5QYXJlbnQgPSBnYW1lLkNvcmVHdWkKICAgIGtwV1FFcFhXLlJlc2V0T25TcGF3biA9IGZhbHNlCiAgICAKICAgIGxvY2FsIHdoeGJDUkNqID0gSW5zdGFuY2UubmV3KCJGcmFtZSIpCiAgICB3aHhiQ1JDai5TaXplID0gVURpbTIubmV3KDAsIDI1MCwgMCwgMjAwKQogICAgd2h4YkNSQ2ouUG9zaXRpb24gPSBVRGltMi5uZXcoMCwgMTAsIDAsIDEwKQogICAgd2h4YkNSQ2ouQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDMwLCAzMCwgNDApCiAgICB3aHhiQ1JDai5Cb3JkZXJTaXplUGl4ZWwgPSAwCiAgICB3aHhiQ1JDai5QYXJlbnQgPSBrcFdRRXBYVwogICAgCiAgICBsb2NhbCBzZ0NYU0VNciA9IEluc3RhbmNlLm5ldygiVUlDb3JuZXIiKQogICAgc2dDWFNFTXIuQ29ybmVyUmFkaXVzID0gVURpbS5uZXcoMCwgOCkKICAgIHNnQ1hTRU1yLlBhcmVudCA9IHdoeGJDUkNqCiAgICAKICAgIAogICAgbG9jYWwgYXFuR3ltekIgPSBJbnN0YW5jZS5uZXcoIlRleHRMYWJlbCIpCiAgICBhcW5HeW16Qi5TaXplID0gVURpbTIubmV3KDEsIDAsIDAsIDMwKQogICAgYXFuR3ltekIuQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDIwLCAyMCwgMzApCiAgICBhcW5HeW16Qi5UZXh0ID0gIvCflKsgR1VORklHSFQgSEFDSyIKICAgIGFxbkd5bXpCLlRleHRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigyNTUsIDI1NSwgMjU1KQogICAgYXFuR3ltekIuRm9udCA9IEVudW0uRm9udC5Hb3RoYW1Cb2xkCiAgICBhcW5HeW16Qi5UZXh0U2l6ZSA9IDE2CiAgICBhcW5HeW16Qi5QYXJlbnQgPSB3aHhiQ1JDagogICAgCiAgICBsb2NhbCBtTEtDRU5HUiA9IEluc3RhbmNlLm5ldygiVUlDb3JuZXIiKQogICAgbUxLQ0VOR1IuQ29ybmVyUmFkaXVzID0gVURpbS5uZXcoMCwgOCkKICAgIG1MS0NFTkdSLlBhcmVudCA9IGFxbkd5bXpCCiAgICAKICAgIAogICAgbG9jYWwgVUh3WFBucEggPSBJbnN0YW5jZS5uZXcoIkZyYW1lIikKICAgIFVId1hQbnBILlNpemUgPSBVRGltMi5uZXcoMSwgLTIwLCAxLCAtNDApCiAgICBVSHdYUG5wSC5Qb3NpdGlvbiA9IFVEaW0yLm5ldygwLCAxMCwgMCwgNDApCiAgICBVSHdYUG5wSC5CYWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0gMQogICAgVUh3WFBucEguUGFyZW50ID0gd2h4YkNSQ2oKICAgIAogICAgCiAgICBsb2NhbCBvTHhldVFBSCA9IDAKICAgIGxvY2FsIGpTWmN2bnViID0ge30KICAgIAogICAgbG9jYWwgYnBTeXpYVksgYWRkVG9nZ2xlKHRleHQsIHNldHRpbmcpCiAgICAgICAgbG9jYWwgR2JydFhITk8gPSBJbnN0YW5jZS5uZXcoIlRleHRCdXR0b24iKQogICAgICAgIEdicnRYSE5PLlNpemUgPSBVRGltMi5uZXcoMSwgMCwgMCwgMzUpCiAgICAgICAgR2JydFhITk8uUG9zaXRpb24gPSBVRGltMi5uZXcoMCwgMCwgMCwgb0x4ZXVRQUgpCiAgICAgICAgR2JydFhITk8uQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDQwLCA0MCwgNTApCiAgICAgICAgR2JydFhITk8uVGV4dCA9ICIiCiAgICAgICAgR2JydFhITk8uUGFyZW50ID0gVUh3WFBucEgKICAgICAgICAKICAgICAgICBsb2NhbCBzZ0NYU0VNciA9IEluc3RhbmNlLm5ldygiVUlDb3JuZXIiKQogICAgICAgIHNnQ1hTRU1yLkNvcm5lclJhZGl1cyA9IFVEaW0ubmV3KDAsIDYpCiAgICAgICAgc2dDWFNFTXIuUGFyZW50ID0gR2JydFhITk8KICAgICAgICAKICAgICAgICBsb2NhbCBBcGZXR2dJTiA9IEluc3RhbmNlLm5ldygiVGV4dExhYmVsIikKICAgICAgICBBcGZXR2dJTi5TaXplID0gVURpbTIubmV3KDAuNywgMCwgMSwgMCkKICAgICAgICBBcGZXR2dJTi5Qb3NpdGlvbiA9IFVEaW0yLm5ldygwLCAxMCwgMCwgMCkKICAgICAgICBBcGZXR2dJTi5CYWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0gMQogICAgICAgIEFwZldHZ0lOLlRleHQgPSAiICAiIC4uIHRleHQKICAgICAgICBBcGZXR2dJTi5UZXh0Q29sb3IzID0gQ29sb3IzLmZyb21SR0IoMjU1LCAyNTUsIDI1NSkKICAgICAgICBBcGZXR2dJTi5Gb250ID0gRW51bS5Gb250LkdvdGhhbQogICAgICAgIEFwZldHZ0lOLlRleHRTaXplID0gMTQKICAgICAgICBBcGZXR2dJTi5UZXh0WEFsaWdubWVudCA9IEVudW0uVGV4dFhBbGlnbm1lbnQuTGVmdAogICAgICAgIEFwZldHZ0lOLlBhcmVudCA9IEdicnRYSE5PCiAgICAgICAgCiAgICAgICAgbG9jYWwgZXVtaHVCQXIgPSBJbnN0YW5jZS5uZXcoIkZyYW1lIikKICAgICAgICBldW1odUJBci5TaXplID0gVURpbTIubmV3KDAsIDQwLCAwLCAyMCkKICAgICAgICBldW1odUJBci5Qb3NpdGlvbiA9IFVEaW0yLm5ldygxLCAtNDUsIDAuNSwgLTEwKQogICAgICAgIGV1bWh1QkFyLkFuY2hvclBvaW50ID0gVmVjdG9yMi5uZXcoMSwgMC41KQogICAgICAgIGV1bWh1QkFyLkJhY2tncm91bmRDb2xvcjMgPSBPVHdqRU11altzZXR0aW5nXSBhbmQgQ29sb3IzLmZyb21SR0IoMCwgMjAwLCAwKSBvciBDb2xvcjMuZnJvbVJHQig4MCwgODAsIDgwKQogICAgICAgIGV1bWh1QkFyLlBhcmVudCA9IEdicnRYSE5PCiAgICAgICAgCiAgICAgICAgbG9jYWwgT2RlRVlGd3YgPSBJbnN0YW5jZS5uZXcoIlVJQ29ybmVyIikKICAgICAgICBPZGVFWUZ3di5Db3JuZXJSYWRpdXMgPSBVRGltLm5ldygwLCAxMCkKICAgICAgICBPZGVFWUZ3di5QYXJlbnQgPSBldW1odUJBcgogICAgICAgIAogICAgICAgIEdicnRYSE5PLk1vdXNlQnV0dG9uMUNsaWNrOkNvbm5lY3QoYnBTeXpYVksoKQogICAgICAgICAgICBPVHdqRU11altzZXR0aW5nXSA9IG5vdCBPVHdqRU11altzZXR0aW5nXQogICAgICAgICAgICBldW1odUJBci5CYWNrZ3JvdW5kQ29sb3IzID0gT1R3akVNdWpbc2V0dGluZ10gYW5kIENvbG9yMy5mcm9tUkdCKDAsIDIwMCwgMCkgb3IgQ29sb3IzLmZyb21SR0IoODAsIDgwLCA4MCkKICAgICAgICAgICAgCiAgICAgICAgICAgIGlmIHNldHRpbmcgPT0gIkFpbWJvdCIgdGhlbgogICAgICAgICAgICAgICAgaWYgakZZbXZwQXUgdGhlbgogICAgICAgICAgICAgICAgICAgIGpGWW12cEF1LlZpc2libGUgPSBPVHdqRU11ai5BaW1ib3QKICAgICAgICAgICAgICAgIGVsc2UKICAgICAgICAgICAgICAgICAgICBjcmVhdGVDaXJjbGUoKQogICAgICAgICAgICAgICAgZW5kCiAgICAgICAgICAgIGVuZAogICAgICAgICAgICAKICAgICAgICAgICAgcHJpbnQodGV4dCAuLiAiOiAiIC4uIChPVHdqRU11altzZXR0aW5nXSBhbmQgIk9OIiBvciAiT0ZGIikpCiAgICAgICAgZW5kKQogICAgICAgIAogICAgICAgIG9MeGV1UUFIID0gb0x4ZXVRQUggKyA0MAogICAgICAgIGpTWmN2bnViW3NldHRpbmddID0gR2JydFhITk8KICAgIGVuZAogICAgCiAgICBhZGRUb2dnbGUoIkFpbWJvdCIsICJBaW1ib3QiKQogICAgYWRkVG9nZ2xlKCJFU1AgQm94IiwgIkVTUCIpCiAgICBhZGRUb2dnbGUoIlVubGltaXRlZCBBbW1vIiwgIlVubGltaXRlZEFtbW8iKQogICAgCiAgICAKICAgIGxvY2FsIHl0dkVVZ2tuID0gSW5zdGFuY2UubmV3KCJUZXh0QnV0dG9uIikKICAgIHl0dkVVZ2tuLlNpemUgPSBVRGltMi5uZXcoMCwgMjUsIDAsIDI1KQogICAgeXR2RVVna24uUG9zaXRpb24gPSBVRGltMi5uZXcoMSwgLTMwLCAwLCA1KQogICAgeXR2RVVna24uQW5jaG9yUG9pbnQgPSBWZWN0b3IyLm5ldygxLCAwKQogICAgeXR2RVVna24uQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDIwMCwgNTAsIDUwKQogICAgeXR2RVVna24uVGV4dCA9ICJYIgogICAgeXR2RVVna24uVGV4dENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDI1NSwgMjU1LCAyNTUpCiAgICB5dHZFVWdrbi5Gb250ID0gRW51bS5Gb250LkdvdGhhbUJvbGQKICAgIHl0dkVVZ2tuLlRleHRTaXplID0gMTQKICAgIHl0dkVVZ2tuLlBhcmVudCA9IGFxbkd5bXpCCiAgICAKICAgIGxvY2FsIHV5UXpaSld5ID0gSW5zdGFuY2UubmV3KCJVSUNvcm5lciIpCiAgICB1eVF6WkpXeS5Db3JuZXJSYWRpdXMgPSBVRGltLm5ldygwLCA2KQogICAgdXlRelpKV3kuUGFyZW50ID0geXR2RVVna24KICAgIAogICAgeXR2RVVna24uTW91c2VCdXR0b24xQ2xpY2s6Q29ubmVjdChicFN5elhWSygpCiAgICAgICAga3BXUUVwWFc6RGVzdHJveSgpCiAgICAgICAgaWYgakZZbXZwQXUgdGhlbiBqRlltdnBBdTpSZW1vdmUoKSBlbmQKICAgICAgICBmb3IgXywgdnZBTE9iTGsgaW4gcGFpcnMoWFhDV0pJbVIpIGRvCiAgICAgICAgICAgIHZ2QUxPYkxrLmJveDpSZW1vdmUoKQogICAgICAgICAgICB2dkFMT2JMay5uYW1lOlJlbW92ZSgpCiAgICAgICAgZW5kCiAgICBlbmQpCiAgICAKICAgIAogICAgbG9jYWwgenNtUWpYdUggPSBmYWxzZQogICAgbG9jYWwgdURtUlJneHgsIHN0YXJ0UG9zCiAgICAKICAgIGFxbkd5bXpCLklucHV0QmVnYW46Q29ubmVjdChicFN5elhWSyhpbnB1dCkKICAgICAgICBpZiBpbnB1dC5Vc2VySW5wdXRUeXBlID09IEVudW0uVXNlcklucHV0VHlwZS5Nb3VzZUJ1dHRvbjEgdGhlbgogICAgICAgICAgICB6c21Ralh1SCA9IHRydWUKICAgICAgICAgICAgdURtUlJneHggPSBpbnB1dC5Qb3NpdGlvbgogICAgICAgICAgICBzdGFydFBvcyA9IHdoeGJDUkNqLlBvc2l0aW9uCiAgICAgICAgICAgIAogICAgICAgICAgICBpbnB1dC5DaGFuZ2VkOkNvbm5lY3QoYnBTeXpYVksoKQogICAgICAgICAgICAgICAgaWYgaW5wdXQuVXNlcklucHV0U3RhdGUgPT0gRW51bS5Vc2VySW5wdXRTdGF0ZS5FbmQgdGhlbgogICAgICAgICAgICAgICAgICAgIHpzbVFqWHVIID0gZmFsc2UKICAgICAgICAgICAgICAgIGVuZAogICAgICAgICAgICBlbmQpCiAgICAgICAgZW5kCiAgICBlbmQpCiAgICAKICAgIGFxbkd5bXpCLklucHV0Q2hhbmdlZDpDb25uZWN0KGJwU3l6WFZLKGlucHV0KQogICAgICAgIGlmIGlucHV0LlVzZXJJbnB1dFR5cGUgPT0gRW51bS5Vc2VySW5wdXRUeXBlLk1vdXNlTW92ZW1lbnQgYW5kIHpzbVFqWHVIIHRoZW4KICAgICAgICAgICAgbG9jYWwgTldQSktHTmUgPSBpbnB1dC5Qb3NpdGlvbiAtIHVEbVJSZ3h4CiAgICAgICAgICAgIHdoeGJDUkNqLlBvc2l0aW9uID0gVURpbTIubmV3KAogICAgICAgICAgICAgICAgc3RhcnRQb3MuWC5TY2FsZSwgCiAgICAgICAgICAgICAgICBzdGFydFBvcy5YLk9mZnNldCArIE5XUEpLR05lLlgsCiAgICAgICAgICAgICAgICBzdGFydFBvcy5ZLlNjYWxlLCAKICAgICAgICAgICAgICAgIHN0YXJ0UG9zLlkuT2Zmc2V0ICsgTldQSktHTmUuWQogICAgICAgICAgICApCiAgICAgICAgZW5kCiAgICBlbmQpCiAgICAKICAgIHJldHVybiBrcFdRRXBYVwplbmQKCgpjcmVhdGVDaXJjbGUoKQpsb2NhbCBoUEZScEZuQyA9IGNyZWF0ZVVJKCkKCgpneUlQQWJQbi5IZWFydGJlYXQ6Q29ubmVjdChicFN5elhWSygpCiAgICAKICAgIGlmIGpGWW12cEF1IHRoZW4KICAgICAgICBqRlltdnBBdS5Qb3NpdGlvbiA9IFZlY3RvcjIubmV3KHVUbHRzVmdyLlZpZXdwb3J0U2l6ZS5YLzIsIHVUbHRzVmdyLlZpZXdwb3J0U2l6ZS5ZLzIpCiAgICBlbmQKICAgIAogICAgCiAgICBhaW1BdFRhcmdldCgpCiAgICB1cGRhdGVFU1AoKQogICAgdXBkYXRlQW1tbygpCmVuZCkKCgp0YXNrLnNwYXduKGJwU3l6WFZLKCkKICAgIHdhaXQoMSkKICAgIGdhbWUuU3RhcnRlckd1aTpTZXRDb3JlKCJTZW5kTm90aWZpY2F0aW9uIiwgewogICAgICAgIFRpdGxlID0gIkd1bmZpZ2h0IEhhY2siLAogICAgICAgIFRleHQgPSAi4pyFIEhhY2sgbG9hZGVkIHN1Y2Nlc3NmdWxseSFcbk9wZW4gVUkgdG8gdG9nZ2xlIGZlYXR1cmVzIiwKICAgICAgICBEdXJhdGlvbiA9IDUKICAgIH0pCmVuZCkKCnByaW50KCI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iKQpwcmludCgi4pyFIEdVTkZJR0hUIEFSRU5BIEhBQ0sgTE9BREVEIikKcHJpbnQoIvCfk4wgRmVhdHVyZXM6IEFpbWJvdCwgRVNQLCBVbmxpbWl0ZWQgQW1tbyIpCnByaW50KCI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iKQ=="
-local _f = loadstring or load
-local _c = _f((function(s)
-    local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    s=s:gsub('[^'..b..'=]','')
-    return (s:gsub('.', function(x)
-        if x=='=' then return '' end
-        local r,f='',(b:find(x)-1)
-        for i=6,1,-1 do
-            r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0')
+-- Gunfight Arena Hack - Fixed Version
+-- No infinite yield errors
+
+-- Simple wait for game
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+
+-- Wait for player
+repeat task.wait() until player
+print("✅ Player loaded")
+
+local camera = Workspace.CurrentCamera
+
+-- Settings
+local Settings = {
+    Aimbot = false,
+    ESP = false,
+    UnlimitedAmmo = false,
+    FOV = 100
+}
+
+-- Drawing objects
+local circle
+local ESPDrawings = {}
+
+-- Create FOV circle
+local function createCircle()
+    if circle then circle:Remove() end
+    
+    circle = Drawing.new("Circle")
+    circle.Visible = Settings.Aimbot
+    circle.Radius = Settings.FOV
+    circle.Thickness = 2
+    circle.Color = Color3.fromRGB(255, 0, 0)
+    circle.Filled = false
+    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+end
+
+-- Get closest player
+local function getClosestPlayer()
+    local closest = nil
+    local closestDist = Settings.FOV
+    local mousePos = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr == player then continue end
+        
+        local char = plr.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local root = char.HumanoidRootPart
+            local pos, onScreen = camera:WorldToViewportPoint(root.Position)
+            
+            if onScreen then
+                local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                if dist < closestDist then
+                    closest = plr
+                    closestDist = dist
+                end
+            end
         end
-        return r
-    end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-        if #x~=8 then return '' end
-        local c=0
-        for i=1,8 do
-            c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0)
+    end
+    
+    return closest
+end
+
+-- Aimbot function
+local function aimAtTarget()
+    if not Settings.Aimbot then return end
+    
+    local target = getClosestPlayer()
+    if not target or not target.Character then return end
+    
+    local root = target.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    local screenPos = camera:WorldToScreenPoint(root.Position)
+    if screenPos.Z > 0 then
+        local mousePos = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+        local targetPos = Vector2.new(screenPos.X, screenPos.Y)
+        local delta = (targetPos - mousePos) * 0.3
+        
+        mousemoverel(delta.X, delta.Y)
+    end
+end
+
+-- ESP function
+local function updateESP()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr == player then continue end
+        
+        local char = plr.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        
+        if Settings.ESP and root then
+            local pos, onScreen = camera:WorldToViewportPoint(root.Position)
+            
+            if onScreen then
+                if not ESPDrawings[plr] then
+                    -- Create ESP drawings
+                    ESPDrawings[plr] = {
+                        box = Drawing.new("Square"),
+                        name = Drawing.new("Text")
+                    }
+                    
+                    local drawings = ESPDrawings[plr]
+                    drawings.box.Thickness = 2
+                    drawings.box.Color = Color3.fromRGB(0, 255, 0)
+                    drawings.box.Filled = false
+                    
+                    drawings.name.Color = Color3.fromRGB(255, 255, 255)
+                    drawings.name.Size = 14
+                    drawings.name.Font = 2
+                    drawings.name.Text = plr.Name
+                    drawings.name.Outline = true
+                end
+                
+                local drawings = ESPDrawings[plr]
+                local head = char:FindFirstChild("Head")
+                
+                if head then
+                    local headPos = camera:WorldToViewportPoint(head.Position)
+                    local height = math.abs(headPos.Y - pos.Y) * 2
+                    local width = height * 0.6
+                    
+                    drawings.box.Size = Vector2.new(width, height)
+                    drawings.box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
+                    drawings.box.Visible = true
+                    
+                    drawings.name.Position = Vector2.new(pos.X, pos.Y - height/2 - 20)
+                    drawings.name.Visible = true
+                end
+            elseif ESPDrawings[plr] then
+                ESPDrawings[plr].box.Visible = false
+                ESPDrawings[plr].name.Visible = false
+            end
+        elseif ESPDrawings[plr] then
+            ESPDrawings[plr].box.Visible = false
+            ESPDrawings[plr].name.Visible = false
         end
-        return string.char(c)
-    end))
-end)(_d))
-_c()
+    end
+    
+    -- Clean up
+    for plr, drawings in pairs(ESPDrawings) do
+        if not Players:FindFirstChild(plr.Name) then
+            drawings.box:Remove()
+            drawings.name:Remove()
+            ESPDrawings[plr] = nil
+        end
+    end
+end
+
+-- Unlimited ammo (simpler method)
+local function updateAmmo()
+    if not Settings.UnlimitedAmmo then return end
+    
+    local char = player.Character
+    if not char then return end
+    
+    -- Try to find gun
+    for _, tool in pairs(char:GetChildren()) do
+        if tool:IsA("Tool") then
+            local ammo = tool:FindFirstChild("Ammo")
+            if ammo and ammo:IsA("NumberValue") then
+                ammo.Value = 999
+            end
+        end
+    end
+end
+
+-- Create simple UI
+local function createUI()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "HackUI"
+    screenGui.Parent = game.CoreGui
+    screenGui.ResetOnSpawn = false
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 250, 0, 200)
+    mainFrame.Position = UDim2.new(0, 10, 0, 10)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = mainFrame
+    
+    -- Title
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    title.Text = "🔫 GUNFIGHT HACK"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 16
+    title.Parent = mainFrame
+    
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 8)
+    titleCorner.Parent = title
+    
+    -- Content
+    local content = Instance.new("Frame")
+    content.Size = UDim2.new(1, -20, 1, -40)
+    content.Position = UDim2.new(0, 10, 0, 40)
+    content.BackgroundTransparency = 1
+    content.Parent = mainFrame
+    
+    -- Create toggle buttons
+    local yPos = 0
+    local buttons = {}
+    
+    local function addToggle(text, setting)
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, 0, 0, 35)
+        button.Position = UDim2.new(0, 0, 0, yPos)
+        button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        button.Text = ""
+        button.Parent = content
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = button
+        
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(0.7, 0, 1, 0)
+        label.Position = UDim2.new(0, 10, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = "  " .. text
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.Font = Enum.Font.Gotham
+        label.TextSize = 14
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Parent = button
+        
+        local indicator = Instance.new("Frame")
+        indicator.Size = UDim2.new(0, 40, 0, 20)
+        indicator.Position = UDim2.new(1, -45, 0.5, -10)
+        indicator.AnchorPoint = Vector2.new(1, 0.5)
+        indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
+        indicator.Parent = button
+        
+        local indCorner = Instance.new("UICorner")
+        indCorner.CornerRadius = UDim.new(0, 10)
+        indCorner.Parent = indicator
+        
+        button.MouseButton1Click:Connect(function()
+            Settings[setting] = not Settings[setting]
+            indicator.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
+            
+            if setting == "Aimbot" then
+                if circle then
+                    circle.Visible = Settings.Aimbot
+                else
+                    createCircle()
+                end
+            end
+            
+            print(text .. ": " .. (Settings[setting] and "ON" or "OFF"))
+        end)
+        
+        yPos = yPos + 40
+        buttons[setting] = button
+    end
+    
+    addToggle("Aimbot", "Aimbot")
+    addToggle("ESP Box", "ESP")
+    addToggle("Unlimited Ammo", "UnlimitedAmmo")
+    
+    -- Close button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 25, 0, 25)
+    closeBtn.Position = UDim2.new(1, -30, 0, 5)
+    closeBtn.AnchorPoint = Vector2.new(1, 0)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 14
+    closeBtn.Parent = title
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 6)
+    closeCorner.Parent = closeBtn
+    
+    closeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+        if circle then circle:Remove() end
+        for _, drawings in pairs(ESPDrawings) do
+            drawings.box:Remove()
+            drawings.name:Remove()
+        end
+    end)
+    
+    -- Draggable
+    local dragging = false
+    local dragStart, startPos
+    
+    title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    title.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            local delta = input.Position - dragStart
+            mainFrame.Position = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+    
+    return screenGui
+end
+
+-- Initialize
+createCircle()
+local ui = createUI()
+
+-- Main loop
+RunService.Heartbeat:Connect(function()
+    -- Update circle position
+    if circle then
+        circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+    end
+    
+    -- Run features
+    aimAtTarget()
+    updateESP()
+    updateAmmo()
+end)
+
+-- Notification
+task.spawn(function()
+    wait(1)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Gunfight Hack",
+        Text = "✅ Hack loaded successfully!\nOpen UI to toggle features",
+        Duration = 5
+    })
+end)
+
+print("=================================")
+print("✅ GUNFIGHT ARENA HACK LOADED")
+print("📌 Features: Aimbot, ESP, Unlimited Ammo")
+print("=================================")
